@@ -2,12 +2,6 @@
 
 use AlphabetWars\NuclearWar;
 
-/**
- * Created by PhpStorm.
- * User: haka
- * Date: 2017. 08. 24.
- * Time: 22:12
- */
 class NuclearWarTest extends PHPUnit_Framework_TestCase
 {
 	/**
@@ -23,32 +17,32 @@ class NuclearWarTest extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @expectedException \InvalidArgumentException
+	 * @expectedException InvalidArgumentException
+	 *
+	 * @cover \AlphabetWars\Nuclear
 	 */
 	public function testFightWithBadParameter()
 	{
 		$this->nuclearWar->fight('almafa@bn');
 	}
 
-	public function testFightWithGoodParameter()
-	{
-		$this->nuclearWar->fight('almafa');
-
-		$this->assertTrue(true);
-	}
-
+	/**
+	 * @cover \AlphabetWars\Nuclear
+	 */
 	public function testBattlefieldWithoutBomb()
 	{
-		$battlefield = 'almasdlamsdlmsd[asldkas]sdfsf';
+		$battlefield                = 'almasdlamsdlmsd[asldkas]sdfsf';
+		$battlefieldWithoutBrackets = 'almasdlamsdlmsdasldkassdfsf';
 
-		$this->assertEquals($battlefield, $this->nuclearWar->fight($battlefield));
+		$this->assertEquals($battlefieldWithoutBrackets, $this->nuclearWar->fight($battlefield));
 	}
 
+	/**
+	 * @cover \AlphabetWars\Nuclear
+	 */
 	public function testBattlefieldWithBombButWithoutShelters()
 	{
-		$battlefield = 'almasdlamsdlmsdasldkas#sdfsf';
-
-		$this->assertEquals('', $this->nuclearWar->fight($battlefield));
+		$this->assertEquals('', $this->nuclearWar->fight('almasdlamsdlmsdasldkas#sdfsf'));
 	}
 
 	/**
@@ -56,17 +50,32 @@ class NuclearWarTest extends PHPUnit_Framework_TestCase
 	 * @param $battlefield
 	 *
 	 * @dataProvider battlefieldProvider
+	 *
+	 * @cover \AlphabetWars\Nuclear
 	 */
 	public function testBattlefieldWithBombAndWithShelters($expected, $battlefield)
 	{
 		$this->assertEquals($expected, $this->nuclearWar->fight($battlefield));
 	}
 
+	/**
+	 * @return array
+	 */
 	public function battlefieldProvider()
 	{
 		return [
+			['almafa', 'almafa'],
 			['abdefghijk', 'abde[fgh]ijk'],
 			['fgh', 'ab#de[fgh]ijk'],
+			['', 'ab#de[fgh]ij#k'],
+			['', '##abde[fgh]ijk'],
+			['mn', '##abde[fgh]ijk[mn]op'],
+			['mn', '#ab#de[fgh]ijk[mn]op'],
+			['mn', '#abde[fgh]i#jk[mn]op'],
+			['ac', '[a]#[b]#[c]'],
+			['d', '[a]#b#[c][d]'],
+			['abc', '[a][b][c]'],
+			['c', '##a[a]b[c]#']
 		];
 	}
 }

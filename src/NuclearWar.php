@@ -8,6 +8,8 @@ class NuclearWar
 {
 	/**
 	 * @param string $battlefield
+	 *
+	 * @return string The character which are not exploded.
 	 */
 	public function fight($battlefield)
 	{
@@ -28,33 +30,42 @@ class NuclearWar
 			return '';
 		}
 
-		// ha két különböző zárójel között van legalább kettő #
-		// ha [ vagy ] mellett van ##
 		$survivors = [];
 		$position  = 0;
 
 		while (
 			$shelterCords = $this->searchShelter($battlefield, $position)
 		) {
+			$leftHashMarksCount  = $this->countHashMarkOnLeft($battlefield, $shelterCords[0]);
+			$rightHashMarksCount = $this->countHashMarkOnRight($battlefield, $shelterCords[1]);
+
 			if (
-				$this->countHashMarkOnLeft($battlefield, $shelterCords[0]) == 2
-				|| $this->countHashMarkOnRight($battlefield, $shelterCords[1]) == 2
-				|| (
-					$this->countHashMarkOnLeft($battlefield, $shelterCords[0]) == 1
-					&& $this->countHashMarkOnRight($battlefield, $shelterCords[1]) == 1
+				$leftHashMarksCount >= 2
+				|| $rightHashMarksCount >= 2
+				||
+				(
+					$leftHashMarksCount == 1
+					&& $rightHashMarksCount == 1
 				)
 			) {
+				$position = $shelterCords[1];
+
 				continue;
 			}
 
-			$survivors[] = substr($battlefield, $shelterCords[0] + 1, $shelterCords[0] - $shelterCords[1]);
-
-			$position = $shelterCords[1];
+			$survivors[] = substr($battlefield, $shelterCords[0] + 1, $shelterCords[1] - $shelterCords[0] - 1);
+			$position    = $shelterCords[1];
 		}
 
 		return implode($survivors, '');
 	}
 
+	/**
+	 * @param string $string
+	 * @param int    $index  The shelter will search from the given index.
+	 *
+	 * @return array|null
+	 */
 	private function searchShelter($string, $index)
 	{
 		$cord1 = strpos($string, '[', $index);
@@ -69,18 +80,30 @@ class NuclearWar
 		return array($cord1, $cord2);
 	}
 
+	/**
+	 * @param string $battlefield
+	 * @param int    $leftIndex
+	 *
+	 * @return int
+	 */
 	private function countHashMarkOnLeft($battlefield, $leftIndex)
 	{
-		$bracketIndex  = strrpos(substr($battlefield, 0, $leftIndex + 1), ']');
+		$bracketIndex  = (int)strrpos(substr($battlefield, 0, $leftIndex), ']');
 
 		if ($bracketIndex === false)
 		{
-			return var_dump((int)substr_count($battlefield, '#', $bracketIndex));
+			return (int)substr_count($battlefield, '#', $bracketIndex);
 		}
 
 		return (int)substr_count($battlefield, '#', $bracketIndex, $leftIndex + 1 - $bracketIndex);
 	}
 
+	/**
+	 * @param string $battlefield
+	 * @param int $rightIndex
+	 *
+	 * @return int
+	 */
 	private function countHashMarkOnRight($battlefield, $rightIndex)
 	{
 		$bracketIndex  = strpos($battlefield, '[', $rightIndex + 1);
